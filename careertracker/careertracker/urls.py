@@ -18,5 +18,6 @@ urlpatterns = [
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
     path('api/auth/google/', GoogleLogin.as_view(), name='google_login'),
     path('accounts/', include('allauth.urls')),
-    path('users/', include('users.urls')),
+    path('api/users/', include('users.urls')),
+    path('api/jobs/', include('jobs.urls')),
 ]
