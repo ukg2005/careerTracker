@@ -43,6 +43,7 @@ class JobApplication(models.Model):
     contacts = models.CharField(max_length=200, null=True, blank=True)
     notes = models.TextField(null=True, blank=True)
     source = models.CharField(max_length=50, choices=source_types, null=True, blank=True)
+    remote = models.BooleanField(default=False)
     
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name} -> {self.job_title}'
