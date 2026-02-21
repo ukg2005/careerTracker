@@ -17,6 +17,17 @@ class JobApplication(models.Model):
         ('LOW', 'Low')
     )
     
+    source_types = (
+        ('LINKEDIN', 'LinkedIn'),
+        ('REFERRAL', 'Referral'),
+        ('JOB_PORTAL', 'Job Portal'),
+        ('COMPANY_WEBSITE', 'Company Website'),
+        ('COLLEGE', 'College / Campus'),
+        ('NETWORKING', 'Networking'),
+        ('RECRUITER', 'Recruiter'),
+        ('OTHER', 'Other'),
+    )
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     job_title = models.CharField(max_length=200)
     role_type = models.CharField(max_length=200)
@@ -29,6 +40,9 @@ class JobApplication(models.Model):
     location = models.CharField(max_length=200)
     link = models.URLField(max_length=500)
     confidence = models.CharField(max_length=10, choices=confidence_types)
+    contacts = models.CharField(max_length=200, null=True, blank=True)
+    notes = models.TextField(null=True, blank=True)
+    source = models.CharField(max_length=50, choices=source_types, null=True, blank=True)
     
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name} -> {self.job_title}'

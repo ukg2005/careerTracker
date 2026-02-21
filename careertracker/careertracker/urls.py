@@ -6,6 +6,7 @@ from rest_framework_simplejwt.views import (
 )
 from dj_rest_auth.registration.views import SocialLoginView
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
 
 class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
@@ -20,4 +21,6 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('api/users/', include('users.urls')),
     path('api/jobs/', include('jobs.urls')),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(), name='swagger-ui'),
 ]
