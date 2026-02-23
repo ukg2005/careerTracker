@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'dj_rest_auth',
     'dj_rest_auth.registration',
     'drf_spectacular',
-    'django_filters'
+    'django_filters',
 ]
 
 INSTALLED_APPS += ['corsheaders']
