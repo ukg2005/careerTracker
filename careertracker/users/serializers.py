@@ -10,7 +10,18 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+    linkedin_url = serializers.URLField(allow_blank=True, allow_null=True, required=False)
+    github_url = serializers.URLField(allow_blank=True, allow_null=True, required=False)
+    portfolio_url = serializers.URLField(allow_blank=True, allow_null=True, required=False)
     
+    def to_internal_value(self, data):
+        for field in ['linkedin_url', 'portfolio_url', 'github_url']:
+            if field in data and isinstance(data[field], str) and data[field].strip():
+                value = data[field].strip()
+                if not value.startswith(('http://', 'https://')):
+                    data[field] = f'https://{value}'
+        return super().to_internal_value(data)
+
     class Meta:
         model = Profile
         fields = ['user', 'bio', 'linkedin_url', 'portfolio_url', 'github_url', 'created_at']

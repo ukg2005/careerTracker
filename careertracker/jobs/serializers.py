@@ -1,14 +1,14 @@
 from rest_framework import serializers
-from .models import JobApplication
+from .models import JobApplication, Interview
 
+class InterviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Interview
+        fields = '__all__'
+        
 class JobApplicationSerializer(serializers.ModelSerializer):
+    interviews = InterviewSerializer(many=True, read_only=True)
     class Meta:
         model = JobApplication
-        fields = [
-            'id', 'job_title', 'company', 'role_type', 
-            'status', 'location', 'link', 'confidence', 
-            'duration', 'salary_est', 'resume_match', 
-            'contacts', 'notes', 'source',
-            'applied_at'
-        ]
+        fields = '__all__'
         read_only_fields = ['applied_at']

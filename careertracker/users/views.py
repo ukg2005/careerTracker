@@ -36,10 +36,13 @@ def verify_otp(request):
     if not record:
         return Response({'error': 'Invalid OTP'})
     if record.created_at < now() - timedelta(minutes=5):
+        record.delete()
         return Response({'error': 'Expired OTP'})
     
     user, created = User.objects.get_or_create(email=email, username=email)
     refresh = RefreshToken.for_user(user)
+    
+    EmailOTP.objects.filter(email=email).delete()
     
     return Response({'access': str(refresh.access_token),
                     'refresh': str(refresh)
@@ -52,3 +55,15 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         profile, created = Profile.objects.get_or_create(user=self.request.user)
         return profile
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        
+        if not serializer.is_valid():
+            print('Validation Error:', serializer.errors)
+        
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
