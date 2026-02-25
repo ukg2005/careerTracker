@@ -1,5 +1,5 @@
 import random
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.core.mail import send_mail
 from .models import EmailOTP, Profile
@@ -9,10 +9,12 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 from rest_framework import generics, permissions
 from .serializers import ProfileSerializer
+from rest_framework.permissions import AllowAny
 
 # Create your views here.
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def send_otp(request):
     email = request.data.get('email')
     otp = str(random.randint(100000, 999999))
@@ -28,6 +30,7 @@ def send_otp(request):
     return Response({'message': 'otp sent'})
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def verify_otp(request):
     email = request.data.get('email')
     otp = request.data.get('otp')

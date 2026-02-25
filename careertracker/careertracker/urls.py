@@ -11,6 +11,9 @@ from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
 class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
 
+from django.conf import settings
+from django.conf.urls.static import static
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -23,4 +26,4 @@ urlpatterns = [
     path('api/jobs/', include('jobs.urls')),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(), name='swagger-ui'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

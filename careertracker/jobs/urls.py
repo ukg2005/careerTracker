@@ -11,4 +11,4 @@ urlpatterns = [
     path('interviews/<int:pk>/', views.InterviewDetailView.as_view(), name='interview_detail'),
     path('documents/', views.JobDocumentListView.as_view(), name='document_list'),
     path("documents/<int:pk>/", views.JobDocumentDetailView.as_view(), name='document_detail'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]

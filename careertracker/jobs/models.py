@@ -49,7 +49,6 @@ class JobApplication(models.Model):
     contacts = models.CharField(max_length=200, null=True, blank=True)
     notes = models.TextField(null=True, blank=True)
     source = models.CharField(max_length=50, choices=SOURCE_TYPES, null=True, blank=True)
-    is_remote = models.BooleanField(default=False)
     
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name} -> {self.job_title}'
@@ -64,11 +63,11 @@ class JobDocument(models.Model):
     
     job = models.ForeignKey(JobApplication, on_delete=models.CASCADE)
     file = models.FileField(upload_to='job_documents/')
-    file_types = models.CharField(max_length=20,  choices=FILE_TYPES)
+    doc_types = models.CharField(max_length=20,  choices=FILE_TYPES)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        type_display = dict(self.FILE_TYPES).get(self.file_types, self.file_types)
+        type_display = dict(self.FILE_TYPES).get(self.doc_types, self.doc_types)
         return f'{type_display} - {self.job.company}'
 
 class Interview(models.Model):

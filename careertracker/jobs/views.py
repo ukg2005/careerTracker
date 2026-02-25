@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import generics, filters
 from rest_framework.permissions import IsAuthenticated
 from .models import JobApplication, Interview, JobDocument
-from .serializers import JobApplicationSerializer, InterviewSerializer, JobDocumentSerialzier
+from .serializers import JobApplicationSerializer, InterviewSerializer, JobDocumentSerializer
 from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -14,7 +14,7 @@ class JobListView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['status', 'is_remote', 'source', 'confidence', 'role_type']
+    filterset_fields = ['status', 'source', 'confidence', 'role_type']
     search_fields = ['company', 'job_title', 'location', 'contacts', 'notes']
     ordering_fields = ['applied_at', 'salary_est', 'resume_match', 'confidence']
     
@@ -23,8 +23,17 @@ class JobListView(generics.ListCreateAPIView):
     def get_queryset(self):
         return JobApplication.objects.filter(user=self.request.user).order_by('-applied_at')
     
+    def create(self, request, *args, **kwargs):
+        print("📥 Incoming Data:", request.data)
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            print("❌ Validation Errors:", serializer.errors)
+            return Response(serializer.errors, status=400)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=201)
+
     def perform_create(self, serializer):
-        return serializer.save(user=self.request.user)
+        serializer.save(user=self.request.user)
     
 class JobDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = JobApplicationSerializer
@@ -79,7 +88,7 @@ class InterviewListView(generics.ListCreateAPIView):
         return Interview.objects.filter(job__user=self.request.user).order_by('-interview_at')
 
     def perform_create(self, serializer):
-        return serializer.save(user=self.request.user)
+        serializer.save()
 
 class InterviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = InterviewSerializer
@@ -90,19 +99,24 @@ class InterviewDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class JobDocumentListView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = JobDocumentSerialzier
+    serializer_class = JobDocumentSerializer
     
     def get_queryset(self):
         return JobDocument.objects.filter(job__user=self.request.user)
 
     def perform_create(self, serializer):
-        job_id = self.request.GET.get('job')
-        job = JobApplication.objects.get(id=job_id, user=self.request.user)
-        serializer.save(job=job)
+        # We assume 'job' is provided in the request body (validated by serializer)
+        # But we must ensure the job belongs to the current user
+        job_instance = serializer.validated_data.get('job')
+        if job_instance.user != self.request.user:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You do not have permission to upload documents for this job.")
+            
+        serializer.save()
 
 class JobDocumentDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = JobDocumentSerialzier
+    serializer_class = JobDocumentSerializer
     
     def get_queryset(self):
         return JobDocument.objects.filter(job__user=self.request.user)
