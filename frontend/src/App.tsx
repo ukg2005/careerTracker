@@ -7,19 +7,24 @@ import JobDetails from "./pages/JobDetails";
 const Register = () => <h1>Register Page</h1>;
 const Analytics = () => <h1>Analytics Page</h1>;
 
+function PrivateMethod ({ children }: {children: React.ReactNode}) {
+  const token = localStorage.getItem('access_token');
+  return token ? children : <Navigate to='login/' replace />;
+}
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         {/* Public Routes */}
-        <Route path='/login' element={<Login/>} />
-        <Route path='/register' element={<Register/>} />
-        <Route path='/verify-otp' element={<VerifyOTP/>} />
+        <Route path='/login' element={<PrivateMethod> <Login/> </PrivateMethod>} />
+        <Route path='/register' element={<PrivateMethod> <Register/> </PrivateMethod>} />
+        <Route path='/verify-otp' element={<PrivateMethod> <VerifyOTP/> </PrivateMethod>} />
 
         {/* Protected Routes */}
-        <Route path='/dashboard' element={<Dashboard/>} />
-        <Route path='/analytics' element={<Analytics/>} />
-        <Route path='/jobs/:id' element={<JobDetails/>} />
+        <Route path='/dashboard' element={<PrivateMethod> <Dashboard/> </PrivateMethod>} />
+        <Route path='/analytics' element={<PrivateMethod> <Analytics/> </PrivateMethod>} />
+        <Route path='/jobs/:id' element={<PrivateMethod> <JobDetails/> </PrivateMethod>} />
 
         {/* Default redirect to login */}
         <Route path='*' element={<Navigate to='/login' replace/>} />
