@@ -11,4 +11,4 @@ cmds = [
 ]
 
 [start]
-cmd = "gunicorn careertracker.wsgi --log-file -"
+cmd = "gunicorn careertracker.wsgi --bind 0.0.0.0:$PORT --log-file -"

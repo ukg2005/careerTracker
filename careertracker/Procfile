@@ -1,1 +1,1 @@
-web: gunicorn careertracker.wsgi --log-file -
+web: gunicorn careertracker.wsgi --bind 0.0.0.0:$PORT --log-file -
