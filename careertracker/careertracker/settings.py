@@ -155,7 +155,9 @@ ACCOUNT_LOGIN_METHOD = {'email'}
 
 # ── Production security (only when DEBUG=False) ───────────────────────────────
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True
+    # Railway terminates SSL at the load balancer — do NOT redirect here
+    # or POST requests get converted to GET (405).
+    SECURE_SSL_REDIRECT = False
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
