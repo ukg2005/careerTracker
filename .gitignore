@@ -1,0 +1,34 @@
+# ── Python / Django ───────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Django
+careertracker/db.sqlite3
+careertracker/media/
+careertracker/staticfiles/
+careertracker/.env
+
+# ── Node / React ──────────────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# ── Extension ─────────────────────────────────────────────────────────────────
+browser-extension/icons/*.png
+
+# ── OS / Editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+*.swp
