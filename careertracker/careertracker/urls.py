@@ -7,6 +7,7 @@ from rest_framework_simplejwt.views import (
 from dj_rest_auth.registration.views import SocialLoginView
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
+from django.http import JsonResponse
 
 class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
@@ -14,7 +15,11 @@ class GoogleLogin(SocialLoginView):
 from django.conf import settings
 from django.conf.urls.static import static
 
+def health_check(request):
+    return JsonResponse({'status': 'ok'})
+
 urlpatterns = [
+    path('health/', health_check, name='health_check'),
     path('admin/', admin.site.urls),
     path('api/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
