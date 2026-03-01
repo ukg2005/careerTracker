@@ -1,0 +1,14 @@
+[providers]
+python = {}
+
+[phases.install]
+cmds = ["pip install -r careertracker/requirements.txt"]
+
+[phases.build]
+cmds = [
+  "cd careertracker && python manage.py collectstatic --noinput",
+  "cd careertracker && python manage.py migrate"
+]
+
+[start]
+cmd = "cd careertracker && gunicorn careertracker.wsgi --log-file -"
