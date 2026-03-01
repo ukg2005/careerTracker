@@ -6,7 +6,7 @@ cmds = ["pip3 install -r careertracker/requirements.txt"]
 
 [phases.build]
 cmds = [
-  "cd careertracker && python3 manage.py collectstatic --noinput",
+  "cd careertracker && python3 manage.py collectstatic --noinput --clear",
   "cd careertracker && python3 manage.py migrate"
 ]
 
