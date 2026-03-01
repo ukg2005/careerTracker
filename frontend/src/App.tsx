@@ -3,31 +3,31 @@ import Login from './pages/Login';
 import VerifyOTP from "./pages/VerifyOTP";
 import Dashboard from "./pages/Dashboard";
 import JobDetails from "./pages/JobDetails";
+import Analytics from "./pages/Analytics";
+import Profile from "./pages/Profile";
 
-const Register = () => <h1>Register Page</h1>;
-const Analytics = () => <h1>Analytics Page</h1>;
-
-function PrivateMethod ({ children }: {children: React.ReactNode}) {
+// Only allows access if a token exists, otherwise redirects to login
+function PrivateRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('access_token');
-  return token ? children : <Navigate to='login/' replace />;
+  return token ? <>{children}</> : <Navigate to='/login' replace />;
 }
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Routes */}
-        <Route path='/login' element={<PrivateMethod> <Login/> </PrivateMethod>} />
-        <Route path='/register' element={<PrivateMethod> <Register/> </PrivateMethod>} />
-        <Route path='/verify-otp' element={<PrivateMethod> <VerifyOTP/> </PrivateMethod>} />
+        {/* Public Routes — no guard, always accessible */}
+        <Route path='/login' element={<Login />} />
+        <Route path='/verify-otp' element={<VerifyOTP />} />
 
         {/* Protected Routes */}
-        <Route path='/dashboard' element={<PrivateMethod> <Dashboard/> </PrivateMethod>} />
-        <Route path='/analytics' element={<PrivateMethod> <Analytics/> </PrivateMethod>} />
-        <Route path='/jobs/:id' element={<PrivateMethod> <JobDetails/> </PrivateMethod>} />
+        <Route path='/dashboard' element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+        <Route path='/analytics' element={<PrivateRoute><Analytics /></PrivateRoute>} />
+        <Route path='/profile' element={<PrivateRoute><Profile /></PrivateRoute>} />
+        <Route path='/jobs/:id' element={<PrivateRoute><JobDetails /></PrivateRoute>} />
 
         {/* Default redirect to login */}
-        <Route path='*' element={<Navigate to='/login' replace/>} />
+        <Route path='*' element={<Navigate to='/login' replace />} />
       </Routes>
     </BrowserRouter>
   );

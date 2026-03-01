@@ -24,7 +24,8 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ['user', 'bio', 'linkedin_url', 'portfolio_url', 'github_url', 'created_at']
+        fields = ['user', 'bio', 'phone', 'location', 'target_role', 'skills', 'years_exp',
+                  'linkedin_url', 'portfolio_url', 'github_url', 'created_at']
     
     def update(self, instance, validated_data):
         user_data = self.initial_data.get('user', {}) if hasattr(self, 'initial_data') and isinstance(self.initial_data, dict) else {}
@@ -37,6 +38,11 @@ class ProfileSerializer(serializers.ModelSerializer):
         user.save()
         
         instance.bio = validated_data.get('bio', instance.bio)
+        instance.phone = validated_data.get('phone', instance.phone)
+        instance.location = validated_data.get('location', instance.location)
+        instance.target_role = validated_data.get('target_role', instance.target_role)
+        instance.skills = validated_data.get('skills', instance.skills)
+        instance.years_exp = validated_data.get('years_exp', instance.years_exp)
         instance.linkedin_url = validated_data.get('linkedin_url', instance.linkedin_url)
         instance.portfolio_url = validated_data.get('portfolio_url', instance.portfolio_url)
         instance.github_url = validated_data.get('github_url', instance.github_url)

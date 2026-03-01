@@ -109,7 +109,7 @@ export default function DocumentsSection({ jobId }: { jobId: string }) {
                     <Text size="xs" c="dimmed">
                         <a href={doc.file} target="_blank" rel="noreferrer">Download / View</a>
                         {' • '} 
-                        {new Date(doc.uploaded_at).toLocaleDateString()}
+                        {new Date(doc.uploaded_at).toLocaleDateString('en-GB')}
                     </Text>
                 </div>
             </Group>

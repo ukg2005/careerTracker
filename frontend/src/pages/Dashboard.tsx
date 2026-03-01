@@ -6,7 +6,8 @@ import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { Modal } from "@mantine/core";
-import { IconTrash } from "@tabler/icons-react";
+import { IconTrash, IconSearch } from "@tabler/icons-react";
+import Navbar from "../components/Navbar";
 
 interface Job {
     id: number;
@@ -21,6 +22,8 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(false);
     const [opened, { open, close }] = useDisclosure(false);
     const [editingJob, setEditingJob] = useState<Job | null>(null);
+    const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState<string | null>(null);
     const navigate = useNavigate();
 
     const form = useForm({
@@ -37,21 +40,25 @@ export default function Dashboard() {
         },
     });
 
-    const fetchJobs = async () => {
+    const fetchJobs = async (searchVal = search, statusVal = statusFilter) => {
+        setLoading(true);
         try {
-            const response = await api.get('jobs/');
-            setJobs(response.data)
-        }catch (error: any) {
+            const params: Record<string, string> = {};
+            if (searchVal.trim()) params.search = searchVal.trim();
+            if (statusVal) params.status = statusVal;
+            const response = await api.get('jobs/', { params });
+            setJobs(response.data);
+        } catch (error: any) {
             console.error('Failed to fetch jobs', error);
-            if (error.response?.status == 401) {
+            if (error.response?.status === 401) {
                 handleLogout();
             }
-        }finally {
+        } finally {
             setLoading(false);
         }
     };
 
-    useEffect(()=>{
+    useEffect(() => {
         fetchJobs();
     }, []);
 
@@ -106,13 +113,36 @@ export default function Dashboard() {
     };
 
     return (
+    <>
+    <Navbar />
     <Container size="lg" my={40}>
-      <Group justify="space-between" mb="xl">
+      <Group justify="space-between" mb="md">
         <Title order={2}>My Job Applications</Title>
-        <Group>
-          <Button onClick={openCreateModal}>+ Add Job</Button>
-          <Button variant="light" color="red" onClick={handleLogout}>Logout</Button>
-        </Group>
+        <Button onClick={openCreateModal}>+ Add Job</Button>
+      </Group>
+
+      {/* Search and Filter bar */}
+      <Group mb="lg" grow>
+        <TextInput
+          placeholder="Search by company, role, location..."
+          leftSection={<IconSearch size={16} />}
+          value={search}
+          onChange={(e) => {
+            setSearch(e.currentTarget.value);
+            fetchJobs(e.currentTarget.value, statusFilter);
+          }}
+        />
+        <Select
+          placeholder="Filter by status"
+          clearable
+          data={['APPLIED', 'INTERVIEW', 'OFFER', 'REJECTED', 'GHOSTED', 'REPLIED']}
+          value={statusFilter}
+          onChange={(val) => {
+            setStatusFilter(val);
+            fetchJobs(search, val);
+          }}
+          style={{ maxWidth: 200 }}
+        />
       </Group>
 
       <Modal opened={opened} onClose={close} title={editingJob ? "Edit Job" : "Add New Job"} centered>
@@ -178,7 +208,7 @@ export default function Dashboard() {
                   <Table.Td>
                     <Badge color={getStatusColor(job.status)} variant="light">{job.status}</Badge>
                   </Table.Td>
-                  <Table.Td>{new Date(job.applied_at).toLocaleDateString()}</Table.Td>
+                  <Table.Td>{new Date(job.applied_at).toLocaleDateString('en-GB')}</Table.Td>
                   <Table.Td>
                       <Group gap="xs">
                         <ActionIcon variant="subtle" color="red" onClick={(e) => handleDelete(e, job.id)}>
@@ -193,5 +223,6 @@ export default function Dashboard() {
         )}
       </Paper>
     </Container>
+    </>
   );
 }

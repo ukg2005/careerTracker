@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Paper, Title, Button, Group, Text, Timeline, TextInput, Textarea, Select, ActionIcon } from "@mantine/core";
-import { IconCalendar, IconCheck, IconTrash } from "@tabler/icons-react";
+import { Paper, Title, Button, Group, Text, Timeline, TextInput, Textarea, Select, ActionIcon, Modal, Badge, ThemeIcon, Divider } from "@mantine/core";
+import { IconCalendar, IconCheck, IconTrash, IconVideo, IconLink, IconUser } from "@tabler/icons-react";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import api from "../api";
@@ -16,13 +16,22 @@ interface Interview {
 }
 
 const INTERVIEW_TYPES = [
-    { value: 'HR', label: 'HR' },
-    { value: 'BEHAVIOURAL', label: 'Behavioural' },
+    { value: 'HR', label: 'HR Screen' },
     { value: 'TECHNICAL', label: 'Technical' },
+    { value: 'BEHAVIOURAL', label: 'Behavioural' },
     { value: 'MANAGERIAL', label: 'Managerial' },
     { value: 'GD', label: 'Group Discussion' },
     { value: 'OTHERS', label: 'Others' },
 ];
+
+const TYPE_COLORS: Record<string, string> = {
+    HR: 'blue',
+    TECHNICAL: 'violet',
+    BEHAVIOURAL: 'cyan',
+    MANAGERIAL: 'orange',
+    GD: 'teal',
+    OTHERS: 'gray',
+};
 
 export default function InterviewsSection({ jobId }: { jobId: string }) {
     const [interviews, setInterviews] = useState<Interview[]>([]);
@@ -85,7 +94,7 @@ export default function InterviewsSection({ jobId }: { jobId: string }) {
 
     return (
         <>
-            <Paper withBorder p="md" radius="md" mt="xl">
+            <Paper withBorder p="lg" radius="md" mt="xl">
                 <Group justify="space-between" mb="lg">
                     <Title order={4}>Interview Timeline</Title>
                     <Button size="xs" leftSection={<IconCalendar size={14} />} onClick={() => setOpened(true)}>
@@ -94,65 +103,90 @@ export default function InterviewsSection({ jobId }: { jobId: string }) {
                 </Group>
 
                 {interviews.length === 0 ? (
-                    <Text c="dimmed" size="sm" ta="center" py="lg">No interviews scheduled yet.</Text>
+                    <Text c="dimmed" size="sm" ta="center" py="xl">No interviews scheduled yet.</Text>
                 ) : (
-                    <Timeline active={interviews.length} bulletSize={24} lineWidth={2}>
+                    <Timeline active={interviews.length} bulletSize={28} lineWidth={2}>
                         {interviews.map((interview) => (
                             <Timeline.Item
                                 key={interview.id}
-                                bullet={<IconCheck size={12} />}
-                                title={interview.type}
+                                bullet={
+                                    <ThemeIcon size={28} radius="xl" color={TYPE_COLORS[interview.type] || 'gray'} variant="filled">
+                                        <IconCheck size={14} />
+                                    </ThemeIcon>
+                                }
+                                title={
+                                    <Group gap="xs">
+                                        <Badge color={TYPE_COLORS[interview.type] || 'gray'} variant="light" size="sm">
+                                            {INTERVIEW_TYPES.find(t => t.value === interview.type)?.label || interview.type}
+                                        </Badge>
+                                    </Group>
+                                }
                             >
-                                <Group justify="space-between">
-                                    <div>
-                                        <Text c="dimmed" size="sm">
-                                            {new Date(interview.interview_at).toLocaleString()}
-                                        </Text>
-                                        <Text size="xs" mt={4}>With: {interview.interview_with}</Text>
-                                        {interview.meeting_link && (
-                                            <Text size="xs" mt={2}>
-                                                <a href={interview.meeting_link} target="_blank" rel="noreferrer">Join Link</a>
-                                            </Text>
-                                        )}
-                                        {interview.feedback && (
-                                            <Text size="xs" mt={4} c="dimmed" fs="italic">"{interview.feedback}"</Text>
-                                        )}
-                                    </div>
-                                    <ActionIcon color="red" variant="subtle" size="sm" onClick={() => handleDelete(interview.id)}>
-                                        <IconTrash size={14} />
-                                    </ActionIcon>
-                                </Group>
+                                <Paper withBorder p="sm" radius="sm" mt="xs" mb="sm">
+                                    <Group justify="space-between" wrap="nowrap">
+                                        <div style={{ flex: 1 }}>
+                                            <Group gap="lg" mb={4}>
+                                                <Group gap={4}>
+                                                    <IconCalendar size={13} color="gray" />
+                                                    <Text size="xs" c="dimmed">
+                                                        {new Date(interview.interview_at).toLocaleDateString('en-GB', {
+                                                            day: '2-digit', month: '2-digit', year: 'numeric'
+                                                        })}{' '}
+                                                        {new Date(interview.interview_at).toLocaleTimeString('en-GB', {
+                                                            hour: '2-digit', minute: '2-digit'
+                                                        })}
+                                                    </Text>
+                                                </Group>
+                                                {interview.interview_with && interview.interview_with !== 'TBD' && (
+                                                    <Group gap={4}>
+                                                        <IconUser size={13} color="gray" />
+                                                        <Text size="xs" c="dimmed">{interview.interview_with}</Text>
+                                                    </Group>
+                                                )}
+                                            </Group>
+                                            {interview.meeting_link && !interview.meeting_link.includes('placeholder') && (
+                                                <Group gap={4} mb={4}>
+                                                    <IconVideo size={13} color="gray" />
+                                                    <Text size="xs">
+                                                        <a href={interview.meeting_link} target="_blank" rel="noreferrer"
+                                                            style={{ color: 'var(--mantine-color-blue-6)', textDecoration: 'none' }}>
+                                                            Join Meeting
+                                                        </a>
+                                                    </Text>
+                                                </Group>
+                                            )}
+                                            {interview.feedback && (
+                                                <Text size="xs" c="dimmed" fs="italic" mt={4}>" {interview.feedback} "</Text>
+                                            )}
+                                        </div>
+                                        <ActionIcon color="red" variant="subtle" size="sm" onClick={() => handleDelete(interview.id)}>
+                                            <IconTrash size={14} />
+                                        </ActionIcon>
+                                    </Group>
+                                </Paper>
                             </Timeline.Item>
                         ))}
                     </Timeline>
                 )}
             </Paper>
 
-            {/* Plain HTML modal - bypasses Mantine CSS issues */}
-            {opened && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ backgroundColor: '#ffffff', borderRadius: 8, padding: 24, width: '100%', maxWidth: 500, margin: '0 16px', boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}>
-                        <Group justify="space-between" mb="md">
-                            <Text fw={600} size="lg">Schedule Interview Round</Text>
-                            <Button variant="subtle" size="xs" onClick={() => setOpened(false)}>✕</Button>
-                        </Group>
-                        <form onSubmit={form.onSubmit(handleSubmit)}>
-                            <Select
-                                label="Interview Type"
-                                data={INTERVIEW_TYPES}
-                                required
-                                mb="sm"
-                                {...form.getInputProps('type')}
-                            />
-                            <TextInput type="datetime-local" label="Date & Time" required mb="sm" {...form.getInputProps('interview_at')} />
-                            <TextInput label="Interviewer Name" placeholder="e.g. John Smith" mb="sm" {...form.getInputProps('interview_with')} />
-                            <TextInput label="Meeting Link" placeholder="https://zoom.us/..." mb="sm" {...form.getInputProps('meeting_link')} />
-                            <Textarea label="Notes / Feedback" placeholder="Prep notes, topics to cover..." mb="xl" {...form.getInputProps('feedback')} />
-                            <Button fullWidth type="submit">Schedule</Button>
-                        </form>
-                    </div>
-                </div>
-            )}
+            <Modal opened={opened} onClose={() => { setOpened(false); form.reset(); }} title="Schedule Interview Round" centered size="md">
+                <form onSubmit={form.onSubmit(handleSubmit)}>
+                    <Select
+                        label="Interview Type"
+                        data={INTERVIEW_TYPES}
+                        required
+                        mb="sm"
+                        {...form.getInputProps('type')}
+                    />
+                    <TextInput type="datetime-local" label="Date & Time" required mb="sm" {...form.getInputProps('interview_at')} />
+                    <TextInput label="Interviewer Name" placeholder="e.g. John Smith" leftSection={<IconUser size={15}/>} mb="sm" {...form.getInputProps('interview_with')} />
+                    <TextInput label="Meeting Link" placeholder="https://zoom.us/..." leftSection={<IconLink size={15}/>} mb="sm" {...form.getInputProps('meeting_link')} />
+                    <Divider my="sm" />
+                    <Textarea label="Notes / Feedback" placeholder="Prep notes, topics to cover, or post-interview feedback..." minRows={3} mb="lg" {...form.getInputProps('feedback')} />
+                    <Button fullWidth type="submit">Schedule Interview</Button>
+                </form>
+            </Modal>
         </>
     );
 }

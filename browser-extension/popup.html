@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareerTracker Clipper</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            width: 380px;
+            min-height: 200px;
+            background: #f8f9fa;
+            color: #212529;
+            font-size: 14px;
+        }
+
+        /* ── Header ─────────────────────────────────────────────────────────── */
+        .header {
+            background: #228be6;
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header-left { display: flex; align-items: center; gap: 8px; }
+        .header-logo {
+            width: 28px; height: 28px; background: white; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 14px; color: #228be6;
+        }
+        .header-title { font-weight: 600; font-size: 15px; }
+        .header-subtitle { font-size: 11px; opacity: 0.85; }
+        .btn-icon {
+            background: rgba(255,255,255,0.2); border: none; color: white;
+            border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;
+        }
+        .btn-icon:hover { background: rgba(255,255,255,0.35); }
+
+        /* ── Views ──────────────────────────────────────────────────────────── */
+        .view { display: none; padding: 16px; }
+        .view.active { display: block; }
+
+        /* ── Form elements ──────────────────────────────────────────────────── */
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 12px; font-weight: 500; margin-bottom: 4px; color: #495057; }
+        input, select, textarea {
+            width: 100%; padding: 8px 10px;
+            border: 1px solid #ced4da; border-radius: 6px;
+            font-size: 13px; background: white; color: #212529;
+            transition: border-color 0.15s;
+            outline: none;
+        }
+        input:focus, select:focus, textarea:focus { border-color: #228be6; box-shadow: 0 0 0 2px rgba(34,139,230,0.2); }
+        textarea { resize: vertical; min-height: 70px; font-family: inherit; }
+
+        /* ── Buttons ────────────────────────────────────────────────────────── */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 8px 16px; border-radius: 6px; border: none;
+            cursor: pointer; font-size: 13px; font-weight: 500;
+            transition: background 0.15s, opacity 0.15s;
+        }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-primary { background: #228be6; color: white; width: 100%; }
+        .btn-primary:hover:not(:disabled) { background: #1c7ed6; }
+        .btn-secondary {
+            background: white; color: #495057;
+            border: 1px solid #ced4da; font-size: 12px; padding: 6px 12px;
+        }
+        .btn-secondary:hover { background: #f1f3f5; }
+        .btn-danger { background: #fa5252; color: white; font-size: 12px; padding: 6px 12px; }
+        .btn-danger:hover:not(:disabled) { background: #f03e3e; }
+
+        /* ── Alert ──────────────────────────────────────────────────────────── */
+        .alert {
+            padding: 8px 10px; border-radius: 6px; font-size: 12px;
+            margin-bottom: 12px; display: none;
+        }
+        .alert.show { display: block; }
+        .alert-error { background: #fff5f5; color: #c92a2a; border: 1px solid #ffc9c9; }
+        .alert-success { background: #ebfbee; color: #2f9e44; border: 1px solid #b2f2bb; }
+        .alert-info { background: #e7f5ff; color: #1864ab; border: 1px solid #a5d8ff; }
+
+        /* ── Login views ─────────────────────────────────────────────────────── */
+        .login-header { text-align: center; margin-bottom: 20px; }
+        .login-header h2 { font-size: 18px; font-weight: 600; }
+        .login-header p { font-size: 12px; color: #868e96; margin-top: 4px; }
+
+        /* ── Job form ────────────────────────────────────────────────────────── */
+        .job-source-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 20px;
+            background: #e7f5ff; color: #1864ab; font-size: 11px;
+            font-weight: 500; margin-bottom: 10px;
+        }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        /* ── Scraped data notice ─────────────────────────────────────────────── */
+        .scrape-notice {
+            font-size: 11px; color: #868e96; margin-bottom: 10px;
+            padding: 6px 8px; background: #f1f3f5; border-radius: 4px;
+        }
+
+        /* ── Settings ────────────────────────────────────────────────────────── */
+        .user-info {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px; background: white; border-radius: 8px;
+            border: 1px solid #e9ecef; margin-bottom: 14px;
+        }
+        .user-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: #228be6; color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 14px; flex-shrink: 0;
+        }
+        .user-email { font-size: 12px; color: #495057; }
+
+        /* ── Loading spinner ─────────────────────────────────────────────────── */
+        .spinner {
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top: 2px solid white;
+            border-radius: 50%; width: 14px; height: 14px;
+            animation: spin 0.7s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Bottom tabs ─────────────────────────────────────────────────────── */
+        .tabs {
+            display: flex; border-top: 1px solid #e9ecef;
+            background: white;
+        }
+        .tab {
+            flex: 1; padding: 9px 0; text-align: center;
+            font-size: 11px; font-weight: 500; color: #868e96;
+            cursor: pointer; border: none; background: none;
+            transition: color 0.15s;
+        }
+        .tab:hover { color: #228be6; }
+        .tab.active { color: #228be6; border-top: 2px solid #228be6; }
+        .tab-icon { display: block; font-size: 16px; }
+
+        /* ── Not on job page ─────────────────────────────────────────────────── */
+        .not-job-page {
+            text-align: center; padding: 24px 16px;
+            color: #868e96;
+        }
+        .not-job-page .big-icon { font-size: 40px; margin-bottom: 8px; }
+        .not-job-page p { font-size: 13px; }
+        .supported-sites { font-size: 11px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────────── -->
+<div class="header">
+    <div class="header-left">
+        <div class="header-logo">CT</div>
+        <div>
+            <div class="header-title">CareerTracker</div>
+            <div class="header-subtitle">Job Clipper</div>
+        </div>
+    </div>
+    <div id="headerActions"></div>
+</div>
+
+<!-- ── View: LOADING ───────────────────────────────────────────────────────── -->
+<div id="view-loading" class="view active">
+    <div style="text-align:center; padding: 30px; color: #868e96;">
+        <div style="font-size: 24px;">⏳</div>
+        <div style="margin-top: 8px; font-size: 13px;">Loading...</div>
+    </div>
+</div>
+
+<!-- ── View: LOGIN (email step) ─────────────────────────────────────────────── -->
+<div id="view-login-email" class="view">
+    <div class="login-header">
+        <h2>Sign In</h2>
+        <p>Enter your CareerTracker email to get an OTP</p>
+    </div>
+    <div id="alert-login-email" class="alert"></div>
+    <div class="form-group">
+        <label for="loginEmail">Email Address</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com" />
+    </div>
+    <button class="btn btn-primary" id="btnSendOtp">
+        <span id="sendOtpLabel">Send OTP</span>
+    </button>
+</div>
+
+<!-- ── View: LOGIN (OTP step) ───────────────────────────────────────────────── -->
+<div id="view-login-otp" class="view">
+    <div class="login-header">
+        <h2>Enter OTP</h2>
+        <p id="otpSubtitle">Check your email for the 6-digit code</p>
+    </div>
+    <div id="alert-login-otp" class="alert"></div>
+    <div class="form-group">
+        <label for="otpInput">One-Time Password</label>
+        <input type="text" id="otpInput" placeholder="123456" maxlength="6"
+               style="letter-spacing: 4px; text-align: center; font-size: 18px;" />
+    </div>
+    <button class="btn btn-primary" id="btnVerifyOtp">
+        <span id="verifyOtpLabel">Verify & Sign In</span>
+    </button>
+    <div style="text-align:center; margin-top: 10px;">
+        <button class="btn btn-secondary" id="btnBackToEmail" style="width: auto;">← Back</button>
+    </div>
+</div>
+
+<!-- ── View: ADD JOB ─────────────────────────────────────────────────────────── -->
+<div id="view-add-job" class="view">
+    <div id="alert-add-job" class="alert"></div>
+    <div id="jobSourceBadge" class="job-source-badge" style="display:none;"></div>
+    <div id="scrapeNotice" class="scrape-notice" style="display:none;">
+        ✅ Job details auto-filled from the page. Edit as needed.
+    </div>
+    <div id="notJobPage" class="not-job-page" style="display:none;">
+        <div class="big-icon">🔍</div>
+        <p>Navigate to a job posting to auto-fill details.</p>
+        <div class="supported-sites">
+            Supported: LinkedIn · Indeed · Glassdoor · Naukri
+        </div>
+    </div>
+
+    <div id="jobForm">
+        <div class="form-group">
+            <label for="jobTitle">Job Title *</label>
+            <input type="text" id="jobTitle" placeholder="e.g. Software Engineer" />
+        </div>
+        <div class="form-group">
+            <label for="jobRoleType">Role Type *</label>
+            <input type="text" id="jobRoleType" placeholder="e.g. Full-time, Internship" />
+        </div>
+        <div class="form-group">
+            <label for="jobCompany">Company *</label>
+            <input type="text" id="jobCompany" placeholder="e.g. Acme Corp" />
+        </div>
+        <div class="two-col">
+            <div class="form-group">
+                <label for="jobStatus">Status</label>
+                <select id="jobStatus">
+                    <option value="APPLIED">Applied</option>
+                    <option value="INTERVIEW">Interviewing</option>
+                    <option value="REPLIED">Replied</option>
+                    <option value="OFFER">Offer</option>
+                    <option value="REJECTED">Rejected</option>
+                    <option value="GHOSTED">Ghosted</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="jobConfidence">Confidence</label>
+                <select id="jobConfidence">
+                    <option value="MEDIUM">Medium</option>
+                    <option value="LOW">Low</option>
+                    <option value="HIGH">High</option>
+                </select>
+            </div>
+        </div>
+        <div class="two-col">
+            <div class="form-group">
+                <label for="jobDuration">Duration *</label>
+                <input type="text" id="jobDuration" placeholder="e.g. Full-time, 6 months" />
+            </div>
+            <div class="form-group">
+                <label for="jobSource">Source</label>
+                <select id="jobSource">
+                    <option value="LINKEDIN">LinkedIn</option>
+                    <option value="JOB_PORTAL">Indeed / Naukri</option>
+                    <option value="COMPANY_WEBSITE">Company Website</option>
+                    <option value="REFERRAL">Referral</option>
+                    <option value="RECRUITER">Recruiter</option>
+                    <option value="NETWORKING">Networking</option>
+                    <option value="COLLEGE">College / Campus</option>
+                    <option value="OTHER">Other</option>
+                </select>
+            </div>
+        </div>
+        <div class="two-col">
+            <div class="form-group">
+                <label for="jobLocation">Location</label>
+                <input type="text" id="jobLocation" placeholder="City, Remote..." />
+            </div>
+            <div class="form-group">
+                <label for="jobSalary">Salary Estimate</label>
+                <input type="number" id="jobSalary" placeholder="e.g. 1200000" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="jobUrl">Job URL</label>
+            <input type="url" id="jobUrl" placeholder="https://..." />
+        </div>
+        <div class="form-group">
+            <label for="jobNotes">Notes</label>
+            <textarea id="jobNotes" placeholder="Any notes about this role..."></textarea>
+        </div>
+
+        <button class="btn btn-primary" id="btnSaveJob">
+            <span id="saveJobLabel">Save to CareerTracker</span>
+        </button>
+    </div>
+</div>
+
+<!-- ── View: SETTINGS ────────────────────────────────────────────────────────── -->
+<div id="view-settings" class="view">
+    <div id="userInfoBox" class="user-info" style="display:none;">
+        <div class="user-avatar" id="userAvatarInitial">?</div>
+        <div>
+            <div style="font-weight:600; font-size:13px;">Logged In</div>
+            <div class="user-email" id="userEmailDisplay"></div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="apiBaseInput">Backend URL</label>
+        <input type="url" id="apiBaseInput" placeholder="http://localhost:8000/api/" />
+        <div style="font-size:11px; color:#868e96; margin-top:4px;">
+            Change this if using a deployed backend (e.g. Railway).
+        </div>
+    </div>
+    <div style="display:flex; gap:8px; margin-bottom:14px;">
+        <button class="btn btn-primary" id="btnSaveSettings" style="flex:1;">Save Settings</button>
+    </div>
+    <div id="alert-settings" class="alert"></div>
+
+    <button class="btn btn-danger" id="btnLogout" style="width:100%;">Sign Out</button>
+</div>
+
+<!-- ── Tabs (shown when logged in) ──────────────────────────────────────────── -->
+<div id="tabBar" class="tabs" style="display:none;">
+    <button class="tab active" id="tab-add-job" data-view="add-job">
+        <span class="tab-icon">➕</span>Add Job
+    </button>
+    <button class="tab" id="tab-settings" data-view="settings">
+        <span class="tab-icon">⚙️</span>Settings
+    </button>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
