@@ -74,6 +74,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+APPEND_SLASH = False  # prevent POST→redirect→GET (405)
+
 ROOT_URLCONF = 'careertracker.urls'
 
 TEMPLATES = [
@@ -133,13 +135,15 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
-# In production set CORS_ALLOWED_ORIGINS to your Vercel URL, e.g.:
-# CORS_ALLOWED_ORIGINS=https://careertracker.vercel.app
-_cors_origins = config('CORS_ALLOWED_ORIGINS', default='')
-if _cors_origins:
-    CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(',') if o.strip()]
-else:
-    CORS_ALLOW_ALL_ORIGINS = True   # local dev only
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    'DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT',
+]
+CORS_ALLOW_HEADERS = [
+    'accept', 'accept-encoding', 'authorization', 'content-type',
+    'dnt', 'origin', 'user-agent', 'x-csrftoken', 'x-requested-with',
+]
 
 # ── Email ─────────────────────────────────────────────────────────────────────
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
