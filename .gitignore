@@ -32,3 +32,5 @@ browser-extension/icons/*.png
 Thumbs.db
 .vscode/
 *.swp
+
+careertracker-extension.zip
