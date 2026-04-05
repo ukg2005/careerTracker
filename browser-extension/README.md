@@ -9,7 +9,7 @@ A Chrome/Edge extension that clips job postings from **LinkedIn, Indeed, Glassdo
 - **Auto-scrapes** job title, company, location, and description from job postings
 - **OTP login** — same auth flow as the main app (no separate credentials)
 - **One-click save** — fills the form, you click "Save to CareerTracker"
-- **Configurable backend URL** — works with localhost and deployed backends (Railway, Render, etc.)
+- **Configurable backend URL** — works with localhost and deployed backends (Render, Vercel, etc.)
 - Detects supported sites automatically; manual entry works on any other page
 
 ---
@@ -81,10 +81,10 @@ The extension uses these CareerTracker API endpoints:
 
 | Method | Endpoint | Purpose |
 |--------|----------|---------|
-| `POST` | `/users/auth/request-otp/` | Send OTP email |
-| `POST` | `/users/auth/verify-otp/` | Verify OTP, get JWT tokens |
-| `POST` | `/users/auth/token/refresh/` | Refresh access token |
-| `POST` | `/jobs/` | Create a new job application |
+| `POST` | `/api/users/send-otp/` | Send OTP email |
+| `POST` | `/api/users/verify-otp/` | Verify OTP, get JWT tokens |
+| `POST` | `/api/refresh/` | Refresh access token |
+| `POST` | `/api/jobs/` | Create a new job application |
 
 No backend changes required — it uses the existing API.
 

@@ -43,17 +43,17 @@
 ## 2. Architecture
 
 ```
-┌──────────────────────────┐      HTTP/JSON       ┌──────────────────────────┐
-│   React Frontend         │ ◄──────────────────► │   Django REST API        │
-│   (Vercel, port 5173)    │                       │   (Railway, port 8000)   │
+┌──────────────────────────┐      HTTP/JSON        ┌──────────────────────────┐
+│   React Frontend         │ ◄──────────────────►  │   Django REST API        │
+│   (Vercel, port 5173)    │                       │   (Render, port 8000)    │
 └──────────────────────────┘                       └────────────┬─────────────┘
                                                                 │
-┌──────────────────────────┐      HTTP/JSON                    │ ORM
-│   Browser Extension      │ ◄──────────────────────────────── │
+┌──────────────────────────┐      HTTP/JSON                     │ ORM
+│   Browser Extension      │ ◄────────────────────────────────  │
 │   (Chrome / Edge / FF)   │                       ┌────────────▼─────────────┐
 └──────────────────────────┘                       │   Database               │
                                                    │   SQLite (local)         │
-                                                   │   PostgreSQL (production) │
+                                                   │   PostgreSQL (production)│
                                                    └──────────────────────────┘
 ```
 
@@ -113,8 +113,8 @@ careerTracker/
 │   ├── manage.py                   ← Django management CLI
 │   ├── requirements.txt            ← Python dependencies
 │   ├── db.sqlite3                  ← Local SQLite database
-│   ├── Procfile                    ← Process definition for Railway
-│   ├── nixpacks.toml / railpack.toml / railway.json  ← Railway deployment config
+│   ├── render.yaml                 ← Render blueprint for backend deployment
+│   ├── frontend/vercel.json        ← Vercel routing config for the frontend
 │   │
 │   ├── careertracker/              ← Django project config package
 │   │   ├── settings.py             ← All configuration (DB, email, JWT, CORS, installed apps)
@@ -185,7 +185,7 @@ careerTracker/
 | Setting | Value | Notes |
 |---|---|---|
 | `DEBUG` | `False` in prod | Read from env via `python-decouple` |
-| `ALLOWED_HOSTS` | `['*']` | Required for Railway health checks |
+| `ALLOWED_HOSTS` | `['*']` | Required for Render service host and health checks |
 | `DATABASES` | SQLite (local) / PostgreSQL (prod) | Switches automatically based on `DATABASE_URL` env var |
 | `CORS_ALLOW_ALL_ORIGINS` | `True` | Allows the frontend and extension to make requests |
 | `APPEND_SLASH` | `False` | Prevents POST requests being redirected, which would convert them to GET (405) |
@@ -398,7 +398,7 @@ To run manually:
 python manage.py send_reminders
 ```
 
-In production this should be scheduled (e.g., Railway cron, Celery beat, or an external cron service) to run once daily.
+In production this should be scheduled (e.g., Render cron, Celery beat, or an external cron service) to run once daily.
 
 ---
 
@@ -472,7 +472,7 @@ The extension clips job postings from supported job boards into CareerTracker wi
 | POST | `/api/refresh/` | Refresh access token |
 | POST | `/api/jobs/` | Create job application |
 
-**Backend URL** is configurable in extension settings (⚙️ tab) — update this after deploying to Railway.
+**Backend URL** is configurable in extension settings (⚙️ tab) — update this after deploying to Render.
 
 ---
 
@@ -594,13 +594,13 @@ EMAIL_HOST_PASSWORD=your-gmail-app-password
 VITE_API_URL=http://localhost:8000/api/
 ```
 
-**Railway (set in Railway dashboard):**
+**Render (set in Render dashboard):**
 
 | Variable | Value |
 |---|---|
 | `SECRET_KEY` | Django secret key |
 | `DEBUG` | `False` |
-| `DATABASE_URL` | Auto-injected by Railway PostgreSQL plugin |
+| `DATABASE_URL` | Auto-injected by Render PostgreSQL |
 | `EMAIL_HOST_USER` | Gmail address |
 | `EMAIL_HOST_PASSWORD` | Gmail app password |
 
@@ -608,4 +608,4 @@ VITE_API_URL=http://localhost:8000/api/
 
 | Variable | Value |
 |---|---|
-| `VITE_API_URL` | `https://your-railway-backend-url.railway.app/api/` |
+| `VITE_API_URL` | `https://your-render-backend.onrender.com/api/` |
