@@ -41,6 +41,9 @@ def send_otp_email(email, otp):
         response.raise_for_status()
         return
 
+    if not getattr(settings, 'DEBUG', False):
+        raise RuntimeError('RESEND_API_KEY is missing in production')
+
     send_mail(
         subject='OTP for CareerTracker',
         message=f'Your otp is {otp}',
