@@ -3,6 +3,7 @@ import logging
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.core.mail import send_mail
+from django.core.management import call_command
 from django.conf import settings
 from .models import EmailOTP, Profile
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -13,9 +14,16 @@ from rest_framework import generics, permissions
 from .serializers import ProfileSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework import status
+from django.db import connection
 
 
 logger = logging.getLogger(__name__)
+
+
+def ensure_users_migrated():
+    existing_tables = connection.introspection.table_names()
+    if EmailOTP._meta.db_table not in existing_tables:
+        call_command('migrate', 'users', interactive=False, verbosity=0)
 
 # Create your views here.
 
@@ -26,6 +34,8 @@ def send_otp(request):
         email = (request.data.get('email') or '').strip()
         if not email:
             return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        ensure_users_migrated()
 
         otp = str(random.randint(100000, 999999))
         EmailOTP.objects.create(email=email, otp=otp)
