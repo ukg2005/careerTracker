@@ -12,36 +12,11 @@ from rest_framework import generics, permissions
 from .serializers import ProfileSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework import status
-from django.db import connection
-from django.core.management import call_command
 from django.core.mail import send_mail
-import threading
 import requests
 
 
 logger = logging.getLogger(__name__)
-_database_ready_lock = threading.Lock()
-_database_ready = False
-
-
-def ensure_database_ready():
-    global _database_ready
-    if _database_ready:
-        return
-
-    with _database_ready_lock:
-        if _database_ready:
-            return
-
-        call_command('migrate', interactive=False, verbosity=0)
-        _database_ready = True
-
-
-def ensure_emailotp_table():
-    existing_tables = connection.introspection.table_names()
-    if EmailOTP._meta.db_table not in existing_tables:
-        with connection.schema_editor() as schema_editor:
-            schema_editor.create_model(EmailOTP)
 
 
 def send_otp_email(email, otp):
@@ -84,9 +59,6 @@ def send_otp(request):
         if not email:
             return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        ensure_database_ready()
-        ensure_emailotp_table()
-
         otp = str(random.randint(100000, 999999))
         EmailOTP.objects.create(email=email, otp=otp)
 
@@ -112,7 +84,6 @@ def verify_otp(request):
         if not email or not otp:
             return Response({'error': 'Email and OTP are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        ensure_database_ready()
         record = EmailOTP.objects.filter(email=email, otp=otp).last()
         if not record:
             return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
