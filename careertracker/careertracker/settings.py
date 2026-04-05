@@ -180,6 +180,8 @@ EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = str(config('EMAIL_HOST_USER', default='')).strip()
 EMAIL_HOST_PASSWORD = str(config('EMAIL_HOST_PASSWORD', default='')).replace(' ', '').strip()
+RESEND_API_KEY = str(config('RESEND_API_KEY', default='')).strip()
+RESEND_FROM_EMAIL = str(config('RESEND_FROM_EMAIL', default=EMAIL_HOST_USER)).strip()
 
 # Always default to SMTP. You can still override via EMAIL_BACKEND in env.
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
