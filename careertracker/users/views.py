@@ -40,8 +40,11 @@ def send_otp(request):
         return Response({'message': 'otp sent'})
     except Exception as exc:
         logger.exception('send_otp failed for email=%s', request.data.get('email'))
+        # Return the actual error in response so user can see what failed
+        error_msg = str(exc)
+        print(f'send_otp ERROR: {error_msg}', flush=True)
         return Response(
-            {'error': 'Unable to send OTP email right now. Please try again.'},
+            {'error': f'OTP failed: {error_msg}'},
             status=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
 
