@@ -13,11 +13,28 @@ from .serializers import ProfileSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 from django.db import connection
+from django.core.management import call_command
 from django.core.mail import send_mail
+import threading
 import requests
 
 
 logger = logging.getLogger(__name__)
+_database_ready_lock = threading.Lock()
+_database_ready = False
+
+
+def ensure_database_ready():
+    global _database_ready
+    if _database_ready:
+        return
+
+    with _database_ready_lock:
+        if _database_ready:
+            return
+
+        call_command('migrate', interactive=False, verbosity=0)
+        _database_ready = True
 
 
 def ensure_emailotp_table():
@@ -67,6 +84,7 @@ def send_otp(request):
         if not email:
             return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
 
+        ensure_database_ready()
         ensure_emailotp_table()
 
         otp = str(random.randint(100000, 999999))
@@ -87,24 +105,43 @@ def send_otp(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def verify_otp(request):
-    email = request.data.get('email')
-    otp = request.data.get('otp')
-    
-    record = EmailOTP.objects.filter(email=email, otp=otp).last()
-    if not record:
-        return Response({'error': 'Invalid OTP'})
-    if record.created_at < now() - timedelta(minutes=5):
-        record.delete()
-        return Response({'error': 'Expired OTP'})
-    
-    user, created = User.objects.get_or_create(email=email, username=email)
-    refresh = RefreshToken.for_user(user)
-    
-    EmailOTP.objects.filter(email=email).delete()
-    
-    return Response({'access': str(refresh.access_token),
-                    'refresh': str(refresh)
-    })
+    try:
+        email = (request.data.get('email') or '').strip()
+        otp = (request.data.get('otp') or '').strip()
+
+        if not email or not otp:
+            return Response({'error': 'Email and OTP are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        ensure_database_ready()
+        record = EmailOTP.objects.filter(email=email, otp=otp).last()
+        if not record:
+            return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+        if record.created_at < now() - timedelta(minutes=5):
+            record.delete()
+            return Response({'error': 'Expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user, created = User.objects.get_or_create(
+            username=email,
+            defaults={'email': email},
+        )
+        if user.email != email:
+            user.email = email
+            user.save(update_fields=['email'])
+
+        refresh = RefreshToken.for_user(user)
+
+        EmailOTP.objects.filter(email=email).delete()
+
+        return Response({
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+        })
+    except Exception as exc:
+        logger.exception('verify_otp failed for email=%s', request.data.get('email'))
+        return Response(
+            {'error': f'OTP verification failed: {exc}'},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = ProfileSerializer
