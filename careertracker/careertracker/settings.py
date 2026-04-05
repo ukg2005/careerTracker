@@ -3,6 +3,19 @@ from datetime import timedelta
 from decouple import config, Csv
 import dj_database_url
 
+
+def _normalize_origins(origins):
+    normalized = []
+    for origin in origins:
+        value = origin.strip()
+        if not value:
+            continue
+        if value.startswith(('http://', 'https://')):
+            normalized.append(value)
+        else:
+            normalized.append(f'https://{value}')
+    return normalized
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -10,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ── Security ──────────────────────────────────────────────────────────────────
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-je4snyu$u@3hc(zkls9u&7#p0@#glf-^itk_estkii!$z#m6%i')
 DEBUG = config('DEBUG', default=False, cast=bool)
-ALLOWED_HOSTS = ['*']  # permissive — Railway health checks require this
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*', cast=Csv())
 
 
 # Application definition
@@ -64,6 +77,7 @@ SIMPLE_JWT = {
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -96,10 +110,17 @@ WSGI_APPLICATION = 'careertracker.wsgi.application'
 
 
 # ── Database ──────────────────────────────────────────────────────────────────
-# Locally, falls back to SQLite. Railway injects DATABASE_URL automatically.
-DATABASE_URL = config('DATABASE_URL', default=None)
+# Locally, falls back to SQLite. Set DATABASE_URL to your Neon connection string
+# in the Render dashboard (include ?sslmode=require in the URL).
+DATABASE_URL = str(config('DATABASE_URL', default=''))
 if DATABASE_URL:
-    DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)}
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
 else:
     DATABASES = {
         'default': {
@@ -126,6 +147,7 @@ USE_TZ = True
 # ── Static & Media files ──────────────────────────────────────────────────────
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -133,7 +155,14 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
-CORS_ALLOW_ALL_ORIGINS = True
+# In production set CORS_ALLOWED_ORIGINS to your Vercel frontend URL.
+# Locally, CORS_ALLOWED_ORIGINS defaults to empty and allow-all kicks in.
+_cors_origins = _normalize_origins(config('CORS_ALLOWED_ORIGINS', default='', cast=Csv()))
+if _cors_origins:
+    CORS_ALLOWED_ORIGINS = _cors_origins
+else:
+    CORS_ALLOW_ALL_ORIGINS = True
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
     'DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT',
@@ -143,21 +172,27 @@ CORS_ALLOW_HEADERS = [
     'dnt', 'origin', 'user-agent', 'x-csrftoken', 'x-requested-with',
 ]
 
+CSRF_TRUSTED_ORIGINS = _normalize_origins(config('CSRF_TRUSTED_ORIGINS', default='', cast=Csv()))
+
 # ── Email ─────────────────────────────────────────────────────────────────────
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_HOST_USER = str(config('EMAIL_HOST_USER', default='')).strip()
+EMAIL_HOST_PASSWORD = str(config('EMAIL_HOST_PASSWORD', default='')).replace(' ', '').strip()
+
+# Always default to SMTP. You can still override via EMAIL_BACKEND in env.
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
+EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=10, cast=int)
 
 # ── allauth ───────────────────────────────────────────────────────────────────
-ACCOUNT_SIGNUP_FIELDS = ['first_name', 'last_name']
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'first_name', 'last_name']
 ACCOUNT_LOGIN_METHOD = {'email'}
 
 # ── Production security (only when DEBUG=False) ───────────────────────────────
 if not DEBUG:
-    # Railway terminates SSL at the load balancer — do NOT redirect here
+    # Render terminates SSL at the load balancer — do NOT redirect here
     # or POST requests get converted to GET (405).
     SECURE_SSL_REDIRECT = False
     SECURE_HSTS_SECONDS = 31536000
@@ -166,3 +201,4 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_CONTENT_TYPE_NOSNIFF = True

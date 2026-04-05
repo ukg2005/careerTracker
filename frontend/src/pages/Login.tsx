@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { TextInput, Button, Paper, Title, Container, Text } from "@mantine/core";
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
@@ -7,6 +7,7 @@ import api from '../api';
 
 export default function Login() {
     const navigate = useNavigate();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         localStorage.removeItem('access_token');
@@ -23,8 +24,10 @@ export default function Login() {
     });
 
     const handleLogin = async (values: {email: string}) => {
+        const email = values.email.trim();
+        setIsSubmitting(true);
         try {
-            await api.post('users/send-otp/', {email: values.email});
+            await api.post('users/send-otp/', {email});
 
             notifications.show({
                 title: 'OTP Sent',
@@ -32,7 +35,7 @@ export default function Login() {
                 color: 'green',
             });
 
-            localStorage.setItem('pending_email', values.email);
+            localStorage.setItem('pending_email', email);
             navigate('/verify-otp');
         }catch (error: any) {
             notifications.show({
@@ -40,6 +43,8 @@ export default function Login() {
                 message: error.response?.data?.error || 'Failed to send OTP',
                 color: 'red',
             });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -53,14 +58,26 @@ export default function Login() {
             </Text>
 
             <Paper withBorder shadow="md" p={30} mt={30} radius='md'>
-                <form onSubmit={form.onSubmit(handleLogin)}>
+                <form
+                    onSubmit={form.onSubmit(
+                        handleLogin,
+                        () => {
+                            notifications.show({
+                                title: 'Invalid email',
+                                message: 'Enter a valid email address to continue.',
+                                color: 'yellow',
+                            });
+                        }
+                    )}
+                >
                     <TextInput
                         label='email'
                         placeholder="you@matine.dev"
+                        type="email"
                         required
                         {...form.getInputProps('email')}
                     />
-                    <Button fullWidth mt='xl' type="submit">
+                    <Button fullWidth mt='xl' type="submit" loading={isSubmitting}>
                         Send OTP
                     </Button>
                 </form>

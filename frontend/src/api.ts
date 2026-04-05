@@ -1,7 +1,23 @@
 import axios from 'axios';
 
+function getApiBaseUrl(): string {
+    const envUrl = import.meta.env.VITE_API_URL;
+    const fallback = 'http://localhost:8000/api/';
+    const raw = (envUrl || fallback).trim();
+    const withTrailingSlash = raw.endsWith('/') ? raw : `${raw}/`;
+
+    // If a full backend origin is provided without /api, append it.
+    if (/\/api\/?$/i.test(withTrailingSlash)) {
+        return withTrailingSlash;
+    }
+
+    return `${withTrailingSlash}api/`;
+}
+
+const API_BASE_URL = getApiBaseUrl();
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/',
+    baseURL: API_BASE_URL,
 });
 
 api.interceptors.request.use(
@@ -18,7 +34,7 @@ api.interceptors.request.use(
     }
 );
 
-api.interceptors.request.use(
+api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
@@ -28,7 +44,7 @@ api.interceptors.request.use(
             try {
                 const refreshToken = localStorage.getItem('refresh_token');
                 const response = await axios.post(
-                    (import.meta.env.VITE_API_URL || 'http://localhost:8000/api/') + 'refresh/', {
+                    `${API_BASE_URL}refresh/`, {
                     refresh: refreshToken
                 });
 

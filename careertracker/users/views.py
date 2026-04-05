@@ -1,7 +1,9 @@
 import random
+import logging
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.core.mail import send_mail
+from django.conf import settings
 from .models import EmailOTP, Profile
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils.timezone import now
@@ -10,24 +12,38 @@ from django.contrib.auth.models import User
 from rest_framework import generics, permissions
 from .serializers import ProfileSerializer
 from rest_framework.permissions import AllowAny
+from rest_framework import status
+
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def send_otp(request):
-    email = request.data.get('email')
-    otp = str(random.randint(100000, 999999))
-    EmailOTP.objects.create(email=email, otp=otp)
-    
-    send_mail(
-        subject='OTP for CareerTracker',
-        message=f'Your otp is {otp}',
-        from_email='udaykirangorli2005@gmail.com',
-        recipient_list=[email],
-    )
-    
-    return Response({'message': 'otp sent'})
+    try:
+        email = (request.data.get('email') or '').strip()
+        if not email:
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        otp = str(random.randint(100000, 999999))
+        EmailOTP.objects.create(email=email, otp=otp)
+
+        send_mail(
+            subject='OTP for CareerTracker',
+            message=f'Your otp is {otp}',
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None) or settings.EMAIL_HOST_USER,
+            recipient_list=[email],
+            fail_silently=False,
+        )
+        return Response({'message': 'otp sent'})
+    except Exception as exc:
+        logger.exception('send_otp failed for email=%s', request.data.get('email'))
+        return Response(
+            {'error': 'Unable to send OTP email right now. Please try again.'},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
