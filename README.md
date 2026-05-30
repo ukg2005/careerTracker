@@ -96,8 +96,8 @@ See `browser-extension/README.md` for the extension-specific setup and supported
 
 ## More Documentation
 
-- Read `DOCUMENTATION.md` for the full project breakdown
-- Read `GUIDE.md` for a deeper explanation of how the backend and frontend work
+- Read [Documentation](DOCUMENTATION.md) for the full project breakdown
+- Read [Guide](GUIDE.md) for a deeper explanation of how the backend and frontend work
 - Read `careertracker/careertracker/urls.py` and `careertracker/jobs/urls.py` for the canonical API routing
 
 ## Notes
