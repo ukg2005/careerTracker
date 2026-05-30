@@ -61,7 +61,7 @@ class JobDocument(models.Model):
         ('OTHERS', 'Others')
     )
     
-    job = models.ForeignKey(JobApplication, on_delete=models.CASCADE)
+    job = models.ForeignKey(JobApplication, on_delete=models.CASCADE, related_name='documents')
     file = models.FileField(upload_to='job_documents/')
     doc_types = models.CharField(max_length=20,  choices=FILE_TYPES)
     uploaded_at = models.DateTimeField(auto_now_add=True)
@@ -80,7 +80,7 @@ class Interview(models.Model):
         ('OTHERS', 'Others')
     )
     
-    job = models.ForeignKey(JobApplication, on_delete=models.CASCADE)
+    job = models.ForeignKey(JobApplication, on_delete=models.CASCADE, related_name='interviews')
     interview_at = models.DateTimeField()
     interview_with = models.CharField(max_length=100)
     meeting_link = models.URLField(max_length=500)

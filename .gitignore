@@ -10,6 +10,7 @@ venv/
 dist/
 build/
 .eggs/
+.env
 
 # Django
 careertracker/db.sqlite3

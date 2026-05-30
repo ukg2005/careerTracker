@@ -13,41 +13,16 @@ from .serializers import ProfileSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 from django.core.mail import send_mail
-import requests
 
 
 logger = logging.getLogger(__name__)
 
 
 def send_otp_email(email, otp):
-    resend_api_key = getattr(settings, 'RESEND_API_KEY', '')
-    resend_from_email = getattr(settings, 'RESEND_FROM_EMAIL', '') or getattr(settings, 'DEFAULT_FROM_EMAIL', '')
-
-    if resend_api_key:
-        response = requests.post(
-            'https://api.resend.com/emails',
-            headers={
-                'Authorization': f'Bearer {resend_api_key}',
-                'Content-Type': 'application/json',
-            },
-            json={
-                'from': resend_from_email,
-                'to': [email],
-                'subject': 'OTP for CareerTracker',
-                'text': f'Your otp is {otp}',
-            },
-            timeout=getattr(settings, 'EMAIL_TIMEOUT', 10),
-        )
-        response.raise_for_status()
-        return
-
-    if not getattr(settings, 'DEBUG', False):
-        raise RuntimeError('RESEND_API_KEY is missing in production')
-
     send_mail(
         subject='OTP for CareerTracker',
-        message=f'Your otp is {otp}',
-        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None) or settings.EMAIL_HOST_USER,
+        message=f'Your OTP is {otp}. Do not share this code with anyone.',
+        from_email=settings.EMAIL_HOST_USER,
         recipient_list=[email],
         fail_silently=False,
     )
