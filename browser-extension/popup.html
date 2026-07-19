@@ -4,118 +4,151 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CareerTracker Clipper</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             width: 380px;
-            min-height: 200px;
-            background: #f8f9fa;
-            color: #212529;
-            font-size: 14px;
+            height: 580px; /* fixed height for Chrome extension popup */
+            display: flex;
+            flex-direction: column;
+            background: #f8fafc; /* solid slate-50 background */
+            color: #1e293b;
+            font-size: 13px;
+            line-height: 1.4;
+            overflow: hidden; /* prevent body from scrolling, scroll views instead */
         }
 
         /* ── Header ─────────────────────────────────────────────────────────── */
         .header {
-            background: #228be6;
+            flex-shrink: 0;
+            background: #2563eb; /* solid premium blue */
             color: white;
             padding: 12px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            z-index: 10;
         }
         .header-left { display: flex; align-items: center; gap: 8px; }
         .header-logo {
-            width: 28px; height: 28px; background: white; border-radius: 6px;
+            width: 28px; height: 28px; background: white; border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 14px; color: #228be6;
+            font-weight: 800; font-size: 14px; color: #2563eb;
+            box-shadow: 0 2px 4px rgba(37,99,235,0.1);
         }
-        .header-title { font-weight: 600; font-size: 15px; }
-        .header-subtitle { font-size: 11px; opacity: 0.85; }
+        .header-title { font-weight: 750; font-size: 15px; letter-spacing: -0.01em; }
+        .header-subtitle { font-size: 10px; font-weight: 600; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1px; }
         .btn-icon {
-            background: rgba(255,255,255,0.2); border: none; color: white;
-            border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;
+            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.1); color: white;
+            border-radius: 8px; padding: 5px 10px; cursor: pointer; font-size: 11px;
+            font-weight: 700; transition: all 0.2s;
         }
-        .btn-icon:hover { background: rgba(255,255,255,0.35); }
+        .btn-icon:hover { background: rgba(255,255,255,0.25); transform: translateY(-0.5px); }
 
         /* ── Views ──────────────────────────────────────────────────────────── */
-        .view { display: none; padding: 16px; }
+        .view { 
+            display: none; 
+            padding: 14px 16px; 
+            flex: 1;
+            overflow-y: auto; /* make active view scrollable */
+        }
         .view.active { display: block; }
 
         /* ── Form elements ──────────────────────────────────────────────────── */
-        .form-group { margin-bottom: 12px; }
-        label { display: block; font-size: 12px; font-weight: 500; margin-bottom: 4px; color: #495057; }
+        .form-group { margin-bottom: 10px; }
+        label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 3px; color: #64748b; text-transform: uppercase; tracking-wider; }
         input, select, textarea {
-            width: 100%; padding: 8px 10px;
-            border: 1px solid #ced4da; border-radius: 6px;
-            font-size: 13px; background: white; color: #212529;
-            transition: border-color 0.15s;
+            width: 100%; padding: 7px 10px;
+            border: 1px solid #cbd5e1; border-radius: 8px;
+            font-size: 12.5px; font-weight: 500; background: white; color: #1e293b;
+            transition: all 0.2s;
             outline: none;
+            font-family: inherit;
         }
-        input:focus, select:focus, textarea:focus { border-color: #228be6; box-shadow: 0 0 0 2px rgba(34,139,230,0.2); }
-        textarea { resize: vertical; min-height: 70px; font-family: inherit; }
+        input:focus, select:focus, textarea:focus { 
+            border-color: #2563eb; 
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1); 
+            background: white;
+        }
+        textarea { resize: vertical; min-height: 60px; }
 
         /* ── Buttons ────────────────────────────────────────────────────────── */
         .btn {
             display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-            padding: 8px 16px; border-radius: 6px; border: none;
-            cursor: pointer; font-size: 13px; font-weight: 500;
-            transition: background 0.15s, opacity 0.15s;
+            padding: 8px 16px; border-radius: 8px; border: none;
+            cursor: pointer; font-size: 12.5px; font-weight: 700;
+            transition: all 0.2s;
+            font-family: inherit;
         }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .btn-primary { background: #228be6; color: white; width: 100%; }
-        .btn-primary:hover:not(:disabled) { background: #1c7ed6; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary { 
+            background: #2563eb; color: white; width: 100%; 
+            box-shadow: 0 2px 4px rgba(37,99,235,0.1);
+        }
+        .btn-primary:hover:not(:disabled) { background: #1d4ed8; transform: translateY(-0.5px); }
         .btn-secondary {
-            background: white; color: #495057;
-            border: 1px solid #ced4da; font-size: 12px; padding: 6px 12px;
+            background: white; color: #475569;
+            border: 1px solid #cbd5e1; font-size: 11.5px; padding: 6px 12px;
         }
-        .btn-secondary:hover { background: #f1f3f5; }
-        .btn-danger { background: #fa5252; color: white; font-size: 12px; padding: 6px 12px; }
-        .btn-danger:hover:not(:disabled) { background: #f03e3e; }
+        .btn-secondary:hover { background: #f8fafc; border-color: #94a3b8; }
+        .btn-danger { 
+            background: #ef4444; color: white; font-size: 11.5px; padding: 6px 12px; 
+            box-shadow: 0 2px 4px rgba(239,68,68,0.1);
+        }
+        .btn-danger:hover:not(:disabled) { background: #dc2626; transform: translateY(-0.5px); }
 
         /* ── Alert ──────────────────────────────────────────────────────────── */
         .alert {
-            padding: 8px 10px; border-radius: 6px; font-size: 12px;
+            padding: 8px 10px; border-radius: 8px; font-size: 11.5px; font-weight: 500;
             margin-bottom: 12px; display: none;
+            border: 1px solid transparent;
         }
         .alert.show { display: block; }
-        .alert-error { background: #fff5f5; color: #c92a2a; border: 1px solid #ffc9c9; }
-        .alert-success { background: #ebfbee; color: #2f9e44; border: 1px solid #b2f2bb; }
-        .alert-info { background: #e7f5ff; color: #1864ab; border: 1px solid #a5d8ff; }
+        .alert-error { background: #fef2f2; color: #b91c1c; border-color: #fca5a5; }
+        .alert-success { background: #ecfdf5; color: #047857; border-color: #6ee7b7; }
+        .alert-info { background: #eff6ff; color: #1d4ed8; border-color: #93c5fd; }
 
         /* ── Login views ─────────────────────────────────────────────────────── */
-        .login-header { text-align: center; margin-bottom: 20px; }
-        .login-header h2 { font-size: 18px; font-weight: 600; }
-        .login-header p { font-size: 12px; color: #868e96; margin-top: 4px; }
+        .login-header { text-align: center; margin-bottom: 18px; }
+        .login-header h2 { font-size: 18px; font-weight: 800; color: #0f172a; }
+        .login-header p { font-size: 11.5px; color: #64748b; margin-top: 4px; font-weight: 500; }
 
         /* ── Job form ────────────────────────────────────────────────────────── */
         .job-source-badge {
-            display: inline-block; padding: 2px 8px; border-radius: 20px;
-            background: #e7f5ff; color: #1864ab; font-size: 11px;
-            font-weight: 500; margin-bottom: 10px;
+            display: inline-block; padding: 3px 10px; border-radius: 20px;
+            background: #eff6ff; color: #1d4ed8; font-size: 10.5px;
+            font-weight: 700; margin-bottom: 10px;
+            border: 1px solid #dbeafe;
         }
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
         /* ── Scraped data notice ─────────────────────────────────────────────── */
         .scrape-notice {
-            font-size: 11px; color: #868e96; margin-bottom: 10px;
-            padding: 6px 8px; background: #f1f3f5; border-radius: 4px;
+            font-size: 11px; color: #047857; margin-bottom: 10px; font-weight: 600;
+            padding: 6px 8px; background: #ecfdf5; border-radius: 8px;
+            border: 1px solid #d1fae5;
         }
 
         /* ── Settings ────────────────────────────────────────────────────────── */
         .user-info {
             display: flex; align-items: center; gap: 10px;
             padding: 10px; background: white; border-radius: 8px;
-            border: 1px solid #e9ecef; margin-bottom: 14px;
+            border: 1px solid #e2e8f0; margin-bottom: 12px;
         }
         .user-avatar {
-            width: 36px; height: 36px; border-radius: 50%;
-            background: #228be6; color: white;
+            width: 32px; height: 32px; border-radius: 50%;
+            background: #2563eb; color: white;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 14px; flex-shrink: 0;
+            font-weight: 800; font-size: 13px; flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(37,99,235,0.15);
         }
-        .user-email { font-size: 12px; color: #495057; }
+        .user-email { font-size: 11.5px; color: #475569; font-weight: 600; }
 
         /* ── Loading spinner ─────────────────────────────────────────────────── */
         .spinner {
@@ -125,31 +158,58 @@
             animation: spin 0.7s linear infinite;
             display: inline-block;
         }
+        .spinner-blue {
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #2563eb;
+            border-radius: 50%; width: 28px; height: 28px;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         /* ── Bottom tabs ─────────────────────────────────────────────────────── */
         .tabs {
-            display: flex; border-top: 1px solid #e9ecef;
+            flex-shrink: 0;
+            display: flex; border-top: 1px solid #e2e8f0;
             background: white;
+            z-index: 10;
         }
         .tab {
-            flex: 1; padding: 9px 0; text-align: center;
-            font-size: 11px; font-weight: 500; color: #868e96;
+            flex: 1; padding: 6px 0; text-align: center;
+            font-size: 10px; font-weight: 700; color: #64748b;
             cursor: pointer; border: none; background: none;
-            transition: color 0.15s;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
         }
-        .tab:hover { color: #228be6; }
-        .tab.active { color: #228be6; border-top: 2px solid #228be6; }
-        .tab-icon { display: block; font-size: 16px; }
+        .tab:hover { color: #2563eb; }
+        .tab.active { color: #2563eb; border-top: 2px solid #2563eb; background: #f8fafc; }
+        .tab-icon { 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            color: inherit;
+        }
 
         /* ── Not on job page ─────────────────────────────────────────────────── */
         .not-job-page {
             text-align: center; padding: 24px 16px;
-            color: #868e96;
+            color: #64748b;
         }
-        .not-job-page .big-icon { font-size: 40px; margin-bottom: 8px; }
-        .not-job-page p { font-size: 13px; }
-        .supported-sites { font-size: 11px; margin-top: 8px; }
+        .not-job-page .big-icon { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            margin-bottom: 10px; 
+            color: #94a3b8; 
+        }
+        .not-job-page p { font-size: 12.5px; font-weight: 500; }
+        .supported-sites { font-size: 10.5px; margin-top: 6px; color: #94a3b8; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -168,9 +228,9 @@
 
 <!-- ── View: LOADING ───────────────────────────────────────────────────────── -->
 <div id="view-loading" class="view active">
-    <div style="text-align:center; padding: 30px; color: #868e96;">
-        <div style="font-size: 24px;">⏳</div>
-        <div style="margin-top: 8px; font-size: 13px;">Loading...</div>
+    <div style="text-align:center; padding: 40px 0; color: #64748b; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;">
+        <div class="spinner-blue"></div>
+        <div style="font-size: 13px; font-weight: 600;">Loading...</div>
     </div>
 </div>
 
@@ -218,7 +278,9 @@
         ✅ Job details auto-filled from the page. Edit as needed.
     </div>
     <div id="notJobPage" class="not-job-page" style="display:none;">
-        <div class="big-icon">🔍</div>
+        <div class="big-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </div>
         <p>Navigate to a job posting to auto-fill details.</p>
         <div class="supported-sites">
             Supported: LinkedIn · Indeed · Glassdoor · Naukri
@@ -331,10 +393,16 @@
 <!-- ── Tabs (shown when logged in) ──────────────────────────────────────────── -->
 <div id="tabBar" class="tabs" style="display:none;">
     <button class="tab active" id="tab-add-job" data-view="add-job">
-        <span class="tab-icon">➕</span>Add Job
+        <span class="tab-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        </span>
+        Add Job
     </button>
     <button class="tab" id="tab-settings" data-view="settings">
-        <span class="tab-icon">⚙️</span>Settings
+        <span class="tab-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </span>
+        Settings
     </button>
 </div>
 

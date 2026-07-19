@@ -1,0 +1,11 @@
+# Enforce LF (Unix) line endings for specific files to avoid Docker/Linux issues on Windows
+
+# Set default behavior
+* text=auto
+
+# Force LF for Dockerfiles and shell scripts
+Dockerfile* text eol=lf
+*.sh text eol=lf
+
+# Force CRLF for Windows batch scripts
+*.bat text eol=crlf

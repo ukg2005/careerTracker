@@ -18,12 +18,18 @@ careertracker/media/
 careertracker/staticfiles/
 careertracker/.env
 
-# ── Node / React ──────────────────────────────────────────────────────────────
+# Sockets and Process Control files
+*.sock
+*.ctl
+
+# ── Node / SvelteKit ──────────────────────────────────────────────────────────
 node_modules/
-frontend/dist/
-frontend/.env
-frontend/.env.local
-frontend/.env.production
+.svelte-kit/
+frontend-svelte/build/
+frontend-svelte/.svelte-kit/
+frontend-svelte/.env
+frontend-svelte/.env.*
+frontend/
 
 # ── Extension ─────────────────────────────────────────────────────────────────
 browser-extension/icons/*.png
@@ -35,3 +41,4 @@ Thumbs.db
 *.swp
 
 careertracker-extension.zip
+frontend/

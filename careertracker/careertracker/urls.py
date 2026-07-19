@@ -1,5 +1,6 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
+from django.views.static import serve
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -13,10 +14,9 @@ class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
 
 from django.conf import settings
-from django.conf.urls.static import static
 
 def health_check(request):
-    return JsonResponse({'status': 'ok'})
+    return JsonResponse({'status': 'ok', 'debug': settings.DEBUG, 'media_root': str(settings.MEDIA_ROOT)})
 
 urlpatterns = [
     path('health/', health_check, name='health_check'),
@@ -31,4 +31,5 @@ urlpatterns = [
     path('api/jobs/', include('jobs.urls')),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(), name='swagger-ui'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+]
