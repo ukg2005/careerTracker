@@ -1,6 +1,6 @@
 # CareerTracker
 
-CareerTracker is a full-stack job application and interview tracker with a Django REST backend, a React + Vite frontend, and an optional browser extension for clipping job postings into the app.
+CareerTracker is a full-stack job application and interview tracker with a Django REST backend, a SvelteKit frontend, and an optional browser extension for clipping job postings into the app.
 
 ## What It Does
 
@@ -49,7 +49,7 @@ CareerTracker is a full-stack job application and interview tracker with a Djang
 ## Project Structure
 
 - `careertracker/` - Django project, app logic, and SQLite database
-- `frontend/` - React + TypeScript user interface
+- `frontend-svelte/` - SvelteKit + TypeScript user interface
 - `browser-extension/` - Optional extension for job clipping
 - `GUIDE.md` - Detailed implementation guide
 - `DOCUMENTATION.md` - Full project documentation
@@ -76,7 +76,7 @@ The backend runs on `http://127.0.0.1:8000/` by default.
 ## Frontend Setup
 
 ```powershell
-cd frontend
+cd frontend-svelte
 npm install
 npm run dev
 ```
@@ -96,8 +96,8 @@ See `browser-extension/README.md` for the extension-specific setup and supported
 
 ## More Documentation
 
-- Read `DOCUMENTATION.md` for the full project breakdown
-- Read `GUIDE.md` for a deeper explanation of how the backend and frontend work
+- Read [Documentation](DOCUMENTATION.md) for the full project breakdown
+- Read [Guide](GUIDE.md) for a deeper explanation of how the backend and frontend work
 - Read `careertracker/careertracker/urls.py` and `careertracker/jobs/urls.py` for the canonical API routing
 
 ## Notes

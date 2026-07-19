@@ -135,7 +135,7 @@ For deployment to cloud (AWS, DigitalOcean, etc.):
 - Full deployment guide: See `DOCKER_DEPLOY.md`
 - Docker docs: https://docs.docker.com/
 - Django docs: https://docs.djangoproject.com/
-- React docs: https://react.dev/
+- Svelte docs: https://svelte.dev/
 
 ---
 

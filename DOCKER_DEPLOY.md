@@ -52,7 +52,7 @@ The docker-compose setup includes:
 
 - **PostgreSQL (db)**: Database service on port 5432
 - **Django Backend (backend)**: REST API on port 8000
-- **React Frontend (frontend)**: React app on port 3000
+- **SvelteKit Frontend (frontend)**: SvelteKit app on port 3000
 - **Nginx (nginx)**: Reverse proxy on port 80
 
 ### Common Commands
@@ -216,4 +216,4 @@ To run multiple backend instances with load balancing:
 
 - Django Docs: https://docs.djangoproject.com/
 - Docker Docs: https://docs.docker.com/
-- React Docs: https://react.dev/
+- SvelteKit Docs: https://kit.svelte.dev/

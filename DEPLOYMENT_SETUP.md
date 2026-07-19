@@ -12,7 +12,7 @@ Your Career Tracker application is now fully configured for Docker deployment! H
    - Runs with Gunicorn server
    - Includes health checks
 
-2. **Dockerfile.frontend** - React frontend container
+2. **Dockerfile.frontend** - SvelteKit frontend container
    - Node.js 22 Alpine image (small footprint)
    - Two-stage build (optimized)
    - Serves with `serve` package
@@ -21,14 +21,14 @@ Your Career Tracker application is now fully configured for Docker deployment! H
 3. **docker-compose.yml** - Orchestration file
    - PostgreSQL database service
    - Django backend service
-   - React frontend service  
+   - SvelteKit frontend service  
    - Nginx reverse proxy
    - Volume management for persistence
    - Health checks for all services
    - Automatic migrations on startup
 
 4. **nginx.conf** - Reverse proxy configuration
-   - Routes frontend requests to React
+   - Routes frontend requests to SvelteKit
    - Routes /api/* requests to Django backend
    - Serves static files with caching
    - Handles media uploads
@@ -96,7 +96,7 @@ docker-compose exec backend python manage.py createsuperuser
 |---------|------|-----|
 | PostgreSQL | 5432 | Internal only |
 | Django Backend | 8000 | http://localhost:8000 |
-| React Frontend | 3000 | http://localhost:3000 |
+| SvelteKit Frontend | 3000 | http://localhost:3000 |
 | Nginx Proxy | 80 | http://localhost:80 |
 
 ## File Structure
@@ -118,7 +118,7 @@ careertracker/
 │   ├── manage.py
 │   ├── requirements.txt         # Python dependencies (already added)
 │   └── ...
-└── frontend/                   # React frontend
+└── frontend-svelte/            # SvelteKit frontend
     ├── package.json
     ├── vite.config.ts
     └── ...

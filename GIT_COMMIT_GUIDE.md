@@ -71,7 +71,7 @@ git add .env.example
 git commit -m "Add Docker and containerization support
 
 - Added Dockerfile for Django backend (Gunicorn)
-- Added Dockerfile for React frontend (Vite + serve)
+- Added Dockerfile for SvelteKit frontend (Vite + serve)
 - Added docker-compose.yml for full-stack orchestration
 - Added Nginx reverse proxy configuration
 - Added environment template (.env.example)
@@ -87,7 +87,7 @@ git push origin main
 
 Your deployment setup is complete with:
 - ✅ Backend containerization (Django + Gunicorn)
-- ✅ Frontend containerization (React + Vite)
+- ✅ Frontend containerization (SvelteKit + Vite)
 - ✅ Database service (PostgreSQL)
 - ✅ Reverse proxy (Nginx)
 - ✅ Health checks

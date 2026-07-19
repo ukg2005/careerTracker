@@ -13,7 +13,7 @@
    - [Authentication Flow](#54-authentication-flow)
    - [File Uploads](#55-file-uploads)
    - [Email & Reminders](#56-email--reminders)
-6. [Frontend — React App](#6-frontend--react-app)
+6. [Frontend — SvelteKit App](#6-frontend--sveltekit-app)
    - [Routing](#61-routing)
    - [API Layer](#62-api-layer)
    - [Pages & Components](#63-pages--components)
@@ -44,7 +44,7 @@
 
 ```
 ┌──────────────────────────┐      HTTP/JSON        ┌──────────────────────────┐
-│   React Frontend         │ ◄──────────────────►  │   Django REST API        │
+│   SvelteKit Frontend     │ ◄──────────────────►  │   Django REST API        │
 │   (Vercel, port 5173)    │                       │   (Render, port 8000)    │
 └──────────────────────────┘                       └────────────┬─────────────┘
                                                                 │
@@ -57,7 +57,7 @@
                                                    └──────────────────────────┘
 ```
 
-Django and React are completely decoupled. Django serves **only JSON** via a REST API; React renders the UI and communicates exclusively via HTTP requests using Axios. CORS is configured to allow all origins.
+Django and SvelteKit are completely decoupled. Django serves **only JSON** via a REST API; SvelteKit renders the UI and communicates exclusively via HTTP requests using standard fetch. CORS is configured to allow all origins.
 
 ---
 
@@ -84,16 +84,12 @@ Django and React are completely decoupled. Django serves **only JSON** via a RES
 ### Frontend
 | Package | Version | Purpose |
 |---|---|---|
-| React | 19.2.0 | UI library |
-| Vite | 7.3.1 | Build tool and dev server |
-| TypeScript | 5.9.3 | Type-safe JavaScript |
-| React Router DOM | 7.13.1 | Client-side routing |
-| Axios | 1.13.5 | HTTP client with interceptors |
-| @mantine/core | 8.3.15 | UI component library |
-| @mantine/form | 8.3.15 | Form state management |
-| @mantine/notifications | 8.3.15 | Toast notifications |
-| @mantine/dates | 8.3.15 | Date/time picker components |
-| @tabler/icons-react | 3.37.1 | Icon set |
+| SvelteKit | 2.15.1 | App framework |
+| Svelte | 5.16.1 | UI framework |
+| TypeScript | 5.3.3 | Type-safe JavaScript |
+| Vite | 6.0.7 | Build tool and dev server |
+| TailwindCSS | 3.4.17 | Styling |
+| Lucide-Svelte | 0.469.0 | Icon set |
 
 ### Browser Extension
 - Manifest V3 (Chrome, Edge, Firefox-compatible)
@@ -142,27 +138,28 @@ careerTracker/
 │   └── media/
 │       └── job_documents/          ← Uploaded files stored here
 │
-├── frontend/                       ← React + Vite app
+├── frontend-svelte/                ← SvelteKit app
 │   ├── package.json
 │   ├── vite.config.ts
-│   ├── tsconfig.json / tsconfig.app.json / tsconfig.node.json
-│   ├── vercel.json                 ← Vercel deployment config
-│   ├── index.html                  ← HTML entry point
+│   ├── tsconfig.json
 │   └── src/
-│       ├── main.tsx                ← React app mount point
-│       ├── App.tsx                 ← Route definitions and PrivateRoute guard
-│       ├── api.ts                  ← Axios instance with JWT interceptors
-│       ├── components/
-│       │   └── Navbar.tsx          ← Navigation bar
-│       └── pages/
-│           ├── Login.tsx           ← Email entry (step 1 of auth)
-│           ├── VerifyOTP.tsx       ← OTP entry (step 2 of auth)
-│           ├── Dashboard.tsx       ← Job application list + add/edit/delete
-│           ├── JobDetails.tsx      ← Single job view with documents & interviews
-│           ├── InterviewSection.tsx← Interview CRUD within JobDetails
-│           ├── DocumentSection.tsx ← Document upload/download within JobDetails
-│           ├── Analytics.tsx       ← Charts and stats
-│           └── Profile.tsx         ← User profile view and edit
+│       ├── app.html                ← HTML entry point
+│       ├── lib/
+│       │   ├── api.ts              ← Fetch helper with JWT interceptors
+│       │   └── components/         ← Reusable Svelte components
+│       │       ├── Navbar.svelte
+│       │       ├── DocumentSection.svelte
+│       │       └── InterviewSection.svelte
+│       └── routes/                 ← File-based routing
+│           ├── +layout.svelte      ← Root layout
+│           ├── +page.svelte        ← Landing page
+│           ├── login/              ← Login page
+│           ├── verify-otp/         ← OTP verification page
+│           └── (authed)/           ← Protected routes group
+│               ├── dashboard/
+│               ├── analytics/
+│               ├── profile/
+│               └── jobs/[id]/      ← Job details page
 │
 └── browser-extension/
     ├── manifest.json               ← Extension manifest (MV3)
@@ -402,51 +399,50 @@ In production this should be scheduled (e.g., Render cron, Celery beat, or an ex
 
 ---
 
-## 6. Frontend — React App
+## 6. Frontend — SvelteKit App
 
 ### 6.1 Routing
 
-Routes are defined in [frontend/src/App.tsx](frontend/src/App.tsx).
+Routes are defined using SvelteKit's file-based routing in `frontend-svelte/src/routes/`.
 
-| Path | Component | Protected |
+| Path | Directory | Protected |
 |---|---|---|
-| `/login` | `Login` | No |
-| `/verify-otp` | `VerifyOTP` | No |
-| `/dashboard` | `Dashboard` | Yes |
-| `/analytics` | `Analytics` | Yes |
-| `/profile` | `Profile` | Yes |
-| `/jobs/:id` | `JobDetails` | Yes |
-| `*` (any) | Redirect to `/login` | — |
+| `/login` | `login/` | No |
+| `/verify-otp` | `verify-otp/` | No |
+| `/dashboard` | `(authed)/dashboard/` | Yes |
+| `/analytics` | `(authed)/analytics/` | Yes |
+| `/profile` | `(authed)/profile/` | Yes |
+| `/jobs/:id` | `(authed)/jobs/[id]/` | Yes |
 
-**`PrivateRoute`**: Reads `access_token` from `localStorage`. If absent, redirects to `/login`.
+**Protected Routes**: The `(authed)/` group layout reads the `access_token` from `localStorage` in `onMount()`. If absent, it redirects to `/login`.
 
 ---
 
 ### 6.2 API Layer
 
-[frontend/src/api.ts](frontend/src/api.ts) exports a configured Axios instance:
+[frontend-svelte/src/lib/api.ts](frontend-svelte/src/lib/api.ts) exports a configured fetch helper (`apiFetch`):
 
-- **Base URL**: `VITE_API_URL` env var, defaults to `http://localhost:8000/api/`
-- **Request interceptor**: Reads `access_token` from `localStorage` and adds `Authorization: Bearer <token>` header to every request
-- **Response interceptor**: On 401, attempts token refresh via `/refresh/`. On success, retries the original request. On failure, clears tokens and redirects to `/login`
+- **Base URL**: Set via `import.meta.env.VITE_API_URL`, defaults to `http://localhost:8000/api/`
+- **Request handling**: Reads `access_token` from `localStorage` and adds `Authorization: Bearer <token>` header to every request.
+- **Token refresh**: On 401 Unauthorized, automatically attempts token refresh via `/refresh/`. On success, retries the original request. On failure, clears tokens and redirects to `/login`.
 
 ---
 
 ### 6.3 Pages & Components
 
-| File | Responsibility |
+| Component / Page | Responsibility |
 |---|---|
-| `Login.tsx` | Collects email, calls `POST /users/send-otp/`, redirects to `/verify-otp` |
-| `VerifyOTP.tsx` | Collects 6-digit OTP, calls `POST /users/verify-otp/`, stores tokens, redirects to `/dashboard` |
-| `Dashboard.tsx` | Lists all job applications; supports filtering, searching, sorting; allows add/edit/delete of applications |
-| `JobDetails.tsx` | Full detail view for a single application; hosts `InterviewSection` and `DocumentSection` |
-| `InterviewSection.tsx` | CRUD for interviews within a job; shows interview date, type, rating, feedback |
-| `DocumentSection.tsx` | Upload and list documents for a job (Resume, Cover Letter, Cold Email, Others) |
-| `Analytics.tsx` | Calls `GET /jobs/stats/` and renders offer rate, rejection rate, interview rate, status breakdown charts |
-| `Profile.tsx` | Calls `GET/PATCH /users/profile/` to display and edit user profile details |
-| `Navbar.tsx` | Navigation links: Dashboard, Analytics, Profile; handles logout (clears localStorage) |
+| `login/+page.svelte` | Collects email, calls `POST /users/send-otp/`, redirects to `/verify-otp` |
+| `verify-otp/+page.svelte` | Collects 6-digit OTP, calls `POST /users/verify-otp/`, stores tokens, redirects to `/dashboard` |
+| `dashboard/+page.svelte` | Lists all job applications; supports filtering, searching, sorting; allows add/edit/delete |
+| `jobs/[id]/+page.svelte` | Full detail view for a single application; hosts `InterviewSection` and `DocumentSection` |
+| `InterviewSection.svelte` | CRUD for interviews within a job; shows interview date, type, rating, feedback |
+| `DocumentSection.svelte` | Upload and list documents for a job (Resume, Cover Letter, Cold Email, Others) |
+| `analytics/+page.svelte` | Calls `GET /jobs/stats/` and renders offer rate, rejection rate, interview rate, status breakdown charts |
+| `profile/+page.svelte` | Calls `GET/PATCH /users/profile/` to display and edit user profile details |
+| `Navbar.svelte` | Navigation links: Dashboard, Analytics, Profile; handles logout (clears localStorage) |
 
-All UI is built with **Mantine v8** components using `@mantine/form` for form state and `@mantine/notifications` for toast feedback.
+All UI is built with **TailwindCSS** for utility-first styling and **Lucide-Svelte** for icons. Reactivity is handled seamlessly using Svelte 5 `$state` runes.
 
 ---
 
