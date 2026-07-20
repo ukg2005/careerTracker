@@ -118,7 +118,7 @@ careertracker/
 │   ├── manage.py
 │   ├── requirements.txt         # Python dependencies (already added)
 │   └── ...
-└── frontend-svelte/            # SvelteKit frontend
+└── frontend/            # SvelteKit frontend
     ├── package.json
     ├── vite.config.ts
     └── ...

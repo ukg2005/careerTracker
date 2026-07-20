@@ -49,7 +49,7 @@ CareerTracker is a full-stack job application and interview tracker with a Djang
 ## Project Structure
 
 - `careertracker/` - Django project, app logic, and SQLite database
-- `frontend-svelte/` - SvelteKit + TypeScript user interface
+- `frontend/` - SvelteKit + TypeScript user interface
 - `browser-extension/` - Optional extension for job clipping
 - `GUIDE.md` - Detailed implementation guide
 - `DOCUMENTATION.md` - Full project documentation
@@ -76,7 +76,7 @@ The backend runs on `http://127.0.0.1:8000/` by default.
 ## Frontend Setup
 
 ```powershell
-cd frontend-svelte
+cd frontend
 npm install
 npm run dev
 ```

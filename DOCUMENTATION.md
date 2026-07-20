@@ -138,7 +138,7 @@ careerTracker/
 │   └── media/
 │       └── job_documents/          ← Uploaded files stored here
 │
-├── frontend-svelte/                ← SvelteKit app
+├── frontend/                ← SvelteKit app
 │   ├── package.json
 │   ├── vite.config.ts
 │   ├── tsconfig.json
@@ -403,7 +403,7 @@ In production this should be scheduled (e.g., Render cron, Celery beat, or an ex
 
 ### 6.1 Routing
 
-Routes are defined using SvelteKit's file-based routing in `frontend-svelte/src/routes/`.
+Routes are defined using SvelteKit's file-based routing in `frontend/src/routes/`.
 
 | Path | Directory | Protected |
 |---|---|---|
@@ -420,7 +420,7 @@ Routes are defined using SvelteKit's file-based routing in `frontend-svelte/src/
 
 ### 6.2 API Layer
 
-[frontend-svelte/src/lib/api.ts](frontend-svelte/src/lib/api.ts) exports a configured fetch helper (`apiFetch`):
+[frontend/src/lib/api.ts](frontend/src/lib/api.ts) exports a configured fetch helper (`apiFetch`):
 
 - **Base URL**: Set via `import.meta.env.VITE_API_URL`, defaults to `http://localhost:8000/api/`
 - **Request handling**: Reads `access_token` from `localStorage` and adds `Authorization: Bearer <token>` header to every request.
